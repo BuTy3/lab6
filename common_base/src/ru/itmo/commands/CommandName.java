@@ -1,9 +1,21 @@
 package ru.itmo.commands;
 
 public enum CommandName {
-    HELP,
-    INFO,
     SHOW,
     ADD,
+    CLEAR,
+    HELP,
+    EXIT,
+    SAVE,
+    INFO,
+    HISTORY,
+    REMOVE_BY_AT,
+    REMOVE_BY_ID,
     UPDATE,
+    REMOVE_ALL_BY_STUDENTS_COUNT,
+    FILTER_STARTS_WITH_NAME,
+    EXECUTE_SCRIPT,
+    MIN_BY_GROUP_ADMIN,
+    REMOVE_GREATER
 }
+

@@ -3,15 +3,21 @@ package ru.itmo.commands;
 import java.util.Objects;
 
 /**
- * Абстрактный класс Command представляет собой команду, которую можно выполнить.
- * Реализует интерфейсы Describable и Executable для получения описания команды и ее выполнения.
+ * Абстрактный класс Command представляет команду, которая может быть выполнена.
+ * Реализует интерфейсы Description и Execute для получения описания и выполнения команды соответственно.
  */
 public abstract class Command implements Description, Execute {
+    /**
+     * Название команды.
+     */
     private final String name;
+    /**
+     * Описание команды.
+     */
     private final String description;
 
     /**
-     * Конструктор для создания команды с указанием имени и описания.
+     * Конструктор для создания команды с заданным именем и описанием.
      *
      * @param name        Название команды.
      * @param description Описание команды.
@@ -40,12 +46,12 @@ public abstract class Command implements Description, Execute {
     }
 
     /**
-     * Получить сообщение об ошибке использования команды.
+     * Возвращает сообщение об ошибке при неправильном использовании команды.
      *
-     * @return Сообщение об ошибке использования команды.
+     * @return Сообщение об ошибке.
      */
     public String getUsingError() {
-        return "Использование: '" + getName() + getDescription() + "'";
+        return "Неправильное количество аргументов!\nИспользование: '" + getName() + getDescription() + "'";
     }
 
     @Override
@@ -65,7 +71,7 @@ public abstract class Command implements Description, Execute {
     public String toString() {
         return "Command{" +
                 "name='" + name + '\'' +
-                ", description='" + description + '\'' + '}';
+                ", description='" + description + '\'' +
+                '}';
     }
 }
-
