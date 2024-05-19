@@ -72,7 +72,10 @@ public class StudyGroup extends Element implements Validatable, Serializable {
         if (studentsCount <= 0) {
             return false;
         }
-        return true;
+        if (groupAdmin != null && !groupAdmin.validate()) {
+            return false;
+        }
+        return coordinates != null && coordinates.validate();
     }
 
     /**
@@ -181,6 +184,15 @@ public class StudyGroup extends Element implements Validatable, Serializable {
      */
     public int compareTo(StudyGroup studyGroup) {
         return (int) (this.id - studyGroup.getId());
+    }
+
+    /**
+     * Устанавливает новый id для группы
+     *
+     * @param nextId
+     */
+    public void setId(long nextId){
+        this.id = nextId;
     }
 
     /**

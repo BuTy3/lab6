@@ -1,5 +1,8 @@
 package ru.itmo.commands;
 
+import ru.itmo.network.Answer;
+import ru.itmo.network.Request;
+
 import java.util.Objects;
 
 /**
@@ -74,4 +77,5 @@ public abstract class Command implements Description, Execute {
                 ", description='" + description + '\'' +
                 '}';
     }
+
 }

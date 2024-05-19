@@ -14,7 +14,7 @@ public interface Execute {
      * @param arguments Аргументы команды.
      * @return Ответ на выполнение команды.
      */
-    default Answer execute(Answer arguments){return null;};
+    default Answer execute(Request arguments){return null;};
 
     /**
      * Выполнить команду с заданными аргументами.

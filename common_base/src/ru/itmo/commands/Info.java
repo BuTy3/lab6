@@ -25,7 +25,7 @@ public class Info extends Command {
     }
 
     @Override
-    public Answer execute (Answer arguments) {
+    public Answer execute (Request arguments) {
         String message;
 
         LocalDateTime lastSaveTime = studyGroupCollectionManager.getLastSaveTime();
