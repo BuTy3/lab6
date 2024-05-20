@@ -26,3 +26,4 @@ public class History extends Command {
         return new Request(getName(), null);
     }
 }
+

@@ -67,15 +67,13 @@ public class Person implements Validatable, Comparable<Person>, Serializable {
         return true;
     }
 
-    /**
-     * Сравнивает текущего человека с другим человеком по имени.
-     *
-     * @param o Другой объект Person для сравнения.
-     * @return Результат сравнения по имени.
-     */
+    private CharSequence getName() {
+        return name;
+    }
+
     @Override
     public int compareTo(Person o) {
-        return name.compareTo(o.name);
+        return 0;
     }
 }
 

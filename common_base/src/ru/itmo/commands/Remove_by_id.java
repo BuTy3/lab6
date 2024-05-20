@@ -9,6 +9,9 @@ import ru.itmo.network.Request;
 import ru.itmo.utility.Console;
 import ru.itmo.exception.InvalidNumberOfElementsException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Remove_by_id extends Command {
     private Console console;
     private CollectionManager<StudyGroup> groupCollectionManager;
@@ -42,12 +45,12 @@ public class Remove_by_id extends Command {
             var id = ((Integer) request.getData());
             if (!groupCollectionManager.remove(id)) throw new NotFoundException();
 
-            return new Answer(true, "Билет успешно удален.");
+            return new Answer(true, "Группа успешно удалена.");
 
         } catch (EmptyValueException exception) {
             return new Answer(false, "Коллекция пуста!");
         } catch (NotFoundException exception) {
-            return new Answer(false, "Билета с таким ID в коллекции нет!");
+            return new Answer(false, "Группы с таким ID в коллекции нет!");
         }
     }
 
@@ -69,5 +72,19 @@ public class Remove_by_id extends Command {
         } catch (NumberFormatException exception) {
             return new Request(false, getName(), "ID должен быть представлен числом!");
         }
+    }
+    /**
+     * Удаляет все учебные группы из коллекции, у которых количество студентов равно заданному значению.
+     *
+     * @param count Количество студентов, по которому производится фильтрация учебных групп для удаления.
+     */
+    private void removeAllBy(int count) {
+        Set<StudyGroup> toDel = new HashSet<>();
+        for (StudyGroup studyGroup : groupCollectionManager.getCollection()) {
+            if (studyGroup.getStudentsCount() == count) {
+                toDel.add(studyGroup);
+            }
+        }
+        groupCollectionManager.getCollection().removeAll(toDel);
     }
 }

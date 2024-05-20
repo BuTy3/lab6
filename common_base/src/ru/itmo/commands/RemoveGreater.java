@@ -10,26 +10,24 @@ import ru.itmo.network.Answer;
 import ru.itmo.network.Request;
 import ru.itmo.utility.Console;
 
-public class Add extends Command {
+import java.util.HashSet;
+import java.util.Set;
+
+public class RemoveGreater extends Command {
     private Console console;
     private CollectionManager<StudyGroup> studyGroupCollectionManager;
     private Form<StudyGroup> StForm;
 
-    public Add() {
-        super(CommandName.ADD, "{element} добавить новый объект Группа в коллекцию");
+    public RemoveGreater() {
+        super(CommandName.REMOVE_GREATER, "удалить из коллекции все элементы больше заданного");
     }
 
-    /**
-     * Конструктор для создания экземпляра команды Add.
-     *
-     * @param studyGroupCollectionManager менеджер коллекции
-     */
-    public Add(CollectionManager<StudyGroup> studyGroupCollectionManager) {
+    public RemoveGreater(CollectionManager<StudyGroup> studyGroupCollectionManager) {
         this();
         this.studyGroupCollectionManager = studyGroupCollectionManager;
     }
 
-    public Add(Console console, Form<StudyGroup> StForm) {
+    public RemoveGreater(Console console, Form<StudyGroup> StForm) {
         this();
         this.console = console;
         this.StForm = StForm;
@@ -38,21 +36,18 @@ public class Add extends Command {
     @Override
     public Answer execute(Request answer) {
         try {
-            var group = ((StudyGroup)answer.getData());
-            group.setId(StudyGroup.getNextId());
-            if (!group.validate()) {
-                return new Answer(false, "Группа не добавлен, поля не валидны!");
+            var group = ((StudyGroup) answer.getData());
+            for (StudyGroup c : studyGroupCollectionManager.getCollection()) {
+                if (c.compareTo(group) > 0)
+                    studyGroupCollectionManager.remove(c);
             }
-            group.setId(studyGroupCollectionManager.getFreeId());
-            if(!studyGroupCollectionManager.add(group))
-                return new Answer(false, "Группа уже существует", -1);
-            return new Answer(true, null, studyGroupCollectionManager.getFreeId());
         } catch (Exception e) {
             return new Answer(false, e.toString(), -1);
         }
+        return new Answer(true, "Команда выполнена успешно, удалено:", -1);
     }
 
-    /**
+        /**
      * Выполняет команду.
      *
      * @param arguments аргументы команды (ожидается отсутствие аргументов)
@@ -62,7 +57,7 @@ public class Add extends Command {
     public Request execute(String[] arguments) {
         try {
             if (!arguments[1].isEmpty()) throw new InvalidNumberOfElementsException();
-            console.println("* Создание новой группы:");
+            console.println("* Создание группы:");
 
             var newGroup = StForm.build();
             return new Request(getName(), newGroup);
@@ -74,5 +69,14 @@ public class Add extends Command {
         } catch (InvalidScriptInputException ignored) {
             return new Request(false, getName(), "Ошибка чтения из скрипта");
         }
+    }
+    private void removeAllBy(int count) {
+        Set<StudyGroup> toDel = new HashSet<>();
+        for (StudyGroup studyGroup : studyGroupCollectionManager.getCollection()) {
+            if (studyGroup.getStudentsCount() == count) {
+                toDel.add(studyGroup);
+            }
+        }
+        studyGroupCollectionManager.getCollection().removeAll(toDel);
     }
 }
