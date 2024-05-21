@@ -69,3 +69,4 @@ public class RemoveAt extends Command {
             return new Request(false, getName(), "Индекс должен быть представлен числом!");
         }
     }
+}
