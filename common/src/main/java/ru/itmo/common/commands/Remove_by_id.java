@@ -23,7 +23,7 @@ public class Remove_by_id extends Command {
     /**
      * Конструктор для создания экземпляра команды Remove.
      *
-     * @param groupCollectionManager менеджер коллекции билетов
+     * @param groupCollectionManager менеджер коллекции
      */
     public Remove_by_id(CollectionManager<StudyGroup> groupCollectionManager) {
         this();

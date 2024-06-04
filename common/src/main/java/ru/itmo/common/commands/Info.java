@@ -15,7 +15,7 @@ public class Info extends Command {
     /**
      * Конструктор для создания экземпляра команды Info.
      *
-     * @param studyGroupCollectionManager менеджер коллекции билетов
+     * @param studyGroupCollectionManager менеджер коллекции
      */
     public Info(CollectionManager<StudyGroup> studyGroupCollectionManager) {
         this();
@@ -26,7 +26,7 @@ public class Info extends Command {
     public Answer execute(Request arguments) {
         String message;
         try {
-            message = studyGroupCollectionManager.toString();
+            message = studyGroupCollectionManager.description();
             return new Answer(true, null, message);
         } catch (Exception e) {
             return new Answer(false, null, e.getMessage());

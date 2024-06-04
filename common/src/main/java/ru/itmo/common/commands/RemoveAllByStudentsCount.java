@@ -21,7 +21,7 @@ public class RemoveAllByStudentsCount extends Command {
     /**
      * Конструктор для создания экземпляра команды Remove.
      *
-     * @param studyGroupCollectionManager менеджер коллекции билетов
+     * @param studyGroupCollectionManager менеджер коллекции
      */
     public RemoveAllByStudentsCount(CollectionManager<StudyGroup> studyGroupCollectionManager) {
         this();

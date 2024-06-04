@@ -30,7 +30,7 @@ public class Show extends Command {
     @Override
     public Answer execute(Request arguments) {
 
-        String message = groupCollectionManager.toString();
+        String message = groupCollectionManager.getCollection().toString();
         return new Answer(true, null, message);
     }
     /**
