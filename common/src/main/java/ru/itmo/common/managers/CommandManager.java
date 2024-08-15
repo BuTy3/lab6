@@ -38,9 +38,7 @@ public class CommandManager {
         register("exit", new Exit());
     }
 
-    public static Map<String, Command> getCommands() {
-        return commands;
-    }
+    public static Map<String, Command> getCommands() {return commands;}
     public static void initServerCommands(CollectionManager<StudyGroup> groupCollectionManager){
         init();
         register("show", new Show(groupCollectionManager));
@@ -53,7 +51,7 @@ public class CommandManager {
         register("remove_all_by_students_count", new RemoveAllByStudentsCount(groupCollectionManager));
         register("filter_starts_with_name", new FilterStartsWithName(groupCollectionManager));
         register("min_by_group_admin", new MinByGroupAdmin(groupCollectionManager));
-        register("remove_greater", new RemoveGreater(groupCollectionManager));
+        register("history", new History());
     }
     public static void initClientCommands(Console console, Form<StudyGroup> studyGroupForm){
         init();
@@ -72,10 +70,17 @@ public class CommandManager {
         register("remove_all_by_students_count", new RemoveAllByStudentsCount());
         register("history", new History());
     }
-    // Обработать команду, поступившую от клиента
+
+    /**
+     * Обрабатывает запрос и выполняет соответствующую команду.
+     *
+     * @param request запрос, содержащий команду для выполнения.
+     * @return ответ на выполнение команды.
+     */
     public static Answer handle(Request request) {
         var command = getCommands().get(request.getCommand());
         if (command == null) return new Answer(false, request.getCommand(), "Команда не найдена!");
+        addToHistory(request.getCommand());
         if(!"exit".equals(request.getCommand()) && !"save".equals(request.getCommand())) {
             return command.execute(request);
         }
@@ -86,6 +91,7 @@ public class CommandManager {
     public static void handleServer(Request request) {
         var command = getCommands().get(request.getCommand());
         if (command == null) return;
+        //addToHistory(request.getCommand());
         if("exit".equals(request.getCommand()) || "save".equals(request.getCommand())) command.execute(request);
     }
     /**
@@ -104,5 +110,9 @@ public class CommandManager {
             sb.append(String.format(" %-35s%-1s%n", command.getName(), command.getDescription()));
         });
         return sb.toString();
+    }
+
+    public static List<String> get_commandHistory(){
+        return commandHistory;
     }
 }

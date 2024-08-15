@@ -8,6 +8,10 @@ import java.net.*;
 import java.util.*;
 import java.util.zip.CRC32;
 
+/**
+ * Класс, представляющий собой читателя запросов на сервере.
+ * Он отвечает за чтение входящих пакетов, их проверку, и сбор их в объект.
+ */
 public class ServerReader {
     private static final Logger logger = LoggerFactory.getLogger(ServerReader.class);
 
@@ -22,6 +26,13 @@ public class ServerReader {
         this.socket = socket;
     }
 
+    /**
+     * Метод для чтения входящего запроса от клиента.
+     *
+     * @return адрес клиента, с которого был получен запрос
+     * @throws IOException            если произошла ошибка ввода-вывода
+     * @throws ClassNotFoundException если класс объекта не найден при десериализации
+     */
     public SocketAddress read() throws IOException, ClassNotFoundException {
         long startTime = System.currentTimeMillis();
         while (true) {
@@ -35,10 +46,13 @@ public class ServerReader {
             }
 
             clientAddress = packet.getSocketAddress();
+            logger.debug("Чтение запроса от: {}", clientAddress);
 
+            //для чтения данных из пакета
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
             DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
 
+            //парсинг данных
             while (dataInputStream.available() > 20) {
                 int packetNumber = dataInputStream.readInt();
                 int totalPackets = dataInputStream.readInt();
@@ -55,12 +69,15 @@ public class ServerReader {
                     continue;
                 }
 
+                //полученные пакеты
                 receivedPackets.put(packetNumber, data);
 
+                //общее кол-во пакетов
                 if (this.totalPackets == -1) {
                     this.totalPackets = totalPackets;
                 }
 
+                // Проверка полученных и пропущенных пакетов
                 for (int i = 0; i < totalPackets; i++) {
                     if (!receivedPackets.containsKey(i)) {
                         missingPackets.add(i);
@@ -79,6 +96,7 @@ public class ServerReader {
             }
         }
 
+        // Проверка завершенности запроса и сборка объекта
         if (missingPackets.isEmpty() && receivedPackets.size() == totalPackets) {
             reassembleObject();
         } else {
@@ -87,8 +105,14 @@ public class ServerReader {
         return clientAddress;
     }
 
+    /**
+     * Метод собирает полученные пакеты в объект.
+     *
+     * @throws IOException            если произошла ошибка ввода-вывода
+     * @throws ClassNotFoundException если класс объекта не найден при десериализации
+     */
     private void reassembleObject() throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();  // Создание потока для записи данных в байтовый массив
         for (int i = 0; i < totalPackets; i++) {
             byteArrayOutputStream.write(receivedPackets.get(i));
         }
@@ -96,13 +120,20 @@ public class ServerReader {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
 
-        receivedObject = objectInputStream.readObject();
+        receivedObject = objectInputStream.readObject(); //десереализация
     }
 
+    /**
+     * Метод отправляет запрос на повторную отправку потерянных пакетов.
+     *
+     * @throws IOException если произошла ошибка ввода-вывода
+     */
     private void requestMissingPackets() throws IOException {
+        //для записи потока байтов в массив
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
+        //запись потерянных пакетов
         dataOutputStream.writeInt(missingPackets.size());
         for (Integer packetNumber : missingPackets) {
             dataOutputStream.writeInt(packetNumber);
@@ -113,10 +144,20 @@ public class ServerReader {
         socket.send(requestPacket);
     }
 
+    /**
+     * Метод проверяет, завершен ли запрос.
+     *
+     * @return {@code true}, если запрос завершен, {@code false} в противном случае
+     */
     public boolean isRequestComplete() {
         return missingPackets.isEmpty() && receivedPackets.size() == totalPackets;
     }
 
+    /**
+     * Метод возвращает объект, полученный в результате запроса.
+     *
+     * @return объект, полученный в результате запроса
+     */
     public Object getReceivedObject() {
         return receivedObject;
     }

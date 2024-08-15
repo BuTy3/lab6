@@ -17,7 +17,7 @@ public class Remove_by_id extends Command {
     private CollectionManager<StudyGroup> groupCollectionManager;
 
     public Remove_by_id() {
-        super(CommandName.REMOVE_BY_ID, "<ID> удалить ticket из коллекции по ID");
+        super(CommandName.REMOVE_BY_ID, "<ID> удалить группу из коллекции по ID");
     }
 
     /**
@@ -41,8 +41,10 @@ public class Remove_by_id extends Command {
         try {
 
             if (groupCollectionManager.collectionSize() == 0) throw new EmptyValueException();
-
-            var id = ((long) request.getData());
+//            System.out.println(request.getData().getClass());
+//            var id = ((long) request.getData());
+//            long id = ((Number) request.getData()).longValue();
+            long id = (long) request.getData();
             if (!groupCollectionManager.remove(id)) throw new NotFoundException();
 
             return new Answer(true, "Группа успешно удалена.");
@@ -65,7 +67,8 @@ public class Remove_by_id extends Command {
         try {
             if (arguments.length < 2 || arguments[1].isEmpty()) throw new InvalidNumberOfElementsException();
 
-            int id = Integer.parseInt(arguments[1]);
+//            int id = Integer.parseInt(arguments[1]);
+            long id = Long.parseLong(arguments[1]);
             return new Request(getName(), id);
         } catch (InvalidNumberOfElementsException exception) {
             return new Request(false, getName(), getUsingError());

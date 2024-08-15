@@ -7,6 +7,9 @@ import java.io.*;
 import java.net.*;
 import java.util.zip.CRC32;
 
+/**
+ * Класс, отвечающий за отправку ответов клиентам от сервера.
+ */
 public class ServerWriter {
     private static final Logger logger = LoggerFactory.getLogger(ServerWriter.class);
 
@@ -19,7 +22,15 @@ public class ServerWriter {
         this.clientAddress = clientAddress;
     }
 
+    /**
+     * Метод для отправки данных клиенту.
+     *
+     * @param data данные для отправки
+     * @throws IOException если произошла ошибка ввода-вывода при отправке данных
+     */
     public void send(Object data) throws IOException {
+        logger.debug("Отправка ответа: {}", clientAddress);
+        //для записи данных
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
         objectOutputStream.writeObject(data);
@@ -28,6 +39,7 @@ public class ServerWriter {
         byte[] byteArray = byteArrayOutputStream.toByteArray();
         int totalPackets = (int) Math.ceil(byteArray.length / (double) PACKET_SIZE);
 
+        //разбиение на пакеты
         for (int i = 0; i < totalPackets; i++) {
             int start = i * PACKET_SIZE;
             int length = Math.min(byteArray.length - start, PACKET_SIZE);
@@ -38,15 +50,17 @@ public class ServerWriter {
             crc.update(packetData);
             long checksum = crc.getValue();
 
+            //поток для записи
             ByteArrayOutputStream packetOutputStream = new ByteArrayOutputStream();
             DataOutputStream dataOutputStream = new DataOutputStream(packetOutputStream);
 
-            dataOutputStream.writeInt(i);
-            dataOutputStream.writeInt(totalPackets);
-            dataOutputStream.writeLong(checksum);
-            dataOutputStream.writeInt(length);
-            dataOutputStream.write(packetData);
+            dataOutputStream.writeInt(i); //номер пакета
+            dataOutputStream.writeInt(totalPackets); //всего пакетов
+            dataOutputStream.writeLong(checksum); //чексумма
+            dataOutputStream.writeInt(length); //длинна
+            dataOutputStream.write(packetData); //данные
 
+            // Получение байтов текущего пакета и создание пакета DatagramPacket для отправки
             byte[] packetBytes = packetOutputStream.toByteArray();
             DatagramPacket packet = new DatagramPacket(packetBytes, packetBytes.length, clientAddress);
             socket.send(packet);

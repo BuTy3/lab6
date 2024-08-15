@@ -121,6 +121,8 @@ public class Runner {
     }
 
     /**
+     * Выполняет команду
+     *
      * @param userCommand Команда для запуска
      * @return Код завершения.
      */

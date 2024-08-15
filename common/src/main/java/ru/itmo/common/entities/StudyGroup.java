@@ -48,6 +48,11 @@ public class StudyGroup extends Element<StudyGroup> implements Validatable, Comp
         this.groupAdmin = groupAdmin;
     }
 
+    public StudyGroup(Long id, String name, Coordinates coordinates, Date creationDate, int studentsCount, FormOfEducation formOfEducation, Semester semesterEnum, Person groupAdmin, int creatorId) {
+        super();
+//        тут чутка доделать надо (*^.^*)
+    }
+
     /**
      * Проверяет валидность данных учебной группы.
      *

@@ -4,6 +4,9 @@ import java.io.*;
 import java.net.*;
 import java.util.zip.CRC32;
 
+/**
+ * Класс ClientWriter отвечает за отправку объектов через DatagramSocket, разбивая их на пакеты.
+ */
 public class ClientWriter {
     private final DatagramSocket socket;
     private final SocketAddress serverAddress;
@@ -14,6 +17,12 @@ public class ClientWriter {
         this.serverAddress = serverAddress;
     }
 
+    /**
+     * Отправляет объект данных, разбивая его на пакеты.
+     *
+     * @param data Объект данных, который нужно отправить.
+     * @throws IOException если возникает ошибка ввода-вывода при отправке данных.
+     */
     public void send(Object data) throws IOException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
@@ -21,7 +30,7 @@ public class ClientWriter {
         objectOutputStream.flush();
         byte[] byteArray = byteArrayOutputStream.toByteArray();
 
-        int totalPackets = (int) Math.ceil(byteArray.length / (double) PACKET_SIZE);
+        int totalPackets = (int) Math.ceil(byteArray.length / (double) PACKET_SIZE); //кол-во необходимых пакетов
 
         for (int i = 0; i < totalPackets; i++) {
             int start = i * PACKET_SIZE;
@@ -36,11 +45,11 @@ public class ClientWriter {
             ByteArrayOutputStream packetOutputStream = new ByteArrayOutputStream();
             DataOutputStream dataOutputStream = new DataOutputStream(packetOutputStream);
 
-            dataOutputStream.writeInt(i);
-            dataOutputStream.writeInt(totalPackets);
-            dataOutputStream.writeLong(checksum);
-            dataOutputStream.writeInt(length);
-            dataOutputStream.write(packetData);
+            dataOutputStream.writeInt(i);//номер пакета
+            dataOutputStream.writeInt(totalPackets); //количество пакетов
+            dataOutputStream.writeLong(checksum); //чексумма
+            dataOutputStream.writeInt(length); //длинна
+            dataOutputStream.write(packetData); //данные
 
             byte[] packetBytes = packetOutputStream.toByteArray();
             DatagramPacket packet = new DatagramPacket(packetBytes, packetBytes.length, serverAddress);

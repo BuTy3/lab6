@@ -18,9 +18,9 @@ import java.util.Scanner;
  *
  */
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    public static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static final Console console = new StandartConsole();
-    private static final int PORT = 23982;
+    private static final int PORT = 4202;
 
     public static void main(String[] args) {
         String filePath = System.getenv("GROUPS_FILE_PATH");
@@ -41,7 +41,7 @@ public class Main {
         DumpManager<StudyGroup> dumpManager = new DumpManager<>(filePath, StudyGroup.class);
         StudyGroupCollectionManager groupCollection = new StudyGroupCollectionManager();
         groupCollection.loadCollection(dumpManager);
-
+        startConsoleListener(groupCollection, dumpManager);
         addShutdownHook(groupCollection, dumpManager);
 
         CommandManager.initServerCommands(groupCollection);
@@ -49,6 +49,12 @@ public class Main {
         server.start();
     }
 
+    /**
+     * Метод добавляет обработчик завершения работы приложения для сохранения коллекции.
+     *
+     * @param collectionManager менеджер коллекции
+     * @param dumpManager       менеджер для дампа коллекции в файл
+     */
     private static void addShutdownHook(StudyGroupCollectionManager collectionManager, DumpManager<StudyGroup> dumpManager) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Сохранение коллекции перед завершением работы...");
@@ -56,6 +62,12 @@ public class Main {
         }));
     }
 
+    /**
+     * Метод запускает слушатель консоли для ввода команд пользователем.
+     *
+     * @param collectionManager менеджер коллекции
+     * @param dumpManager       менеджер для дампа коллекции в файл
+     */
     private static void startConsoleListener(StudyGroupCollectionManager collectionManager, DumpManager<StudyGroup> dumpManager) {
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
@@ -63,7 +75,7 @@ public class Main {
                 String input = scanner.nextLine().trim();
                 if ("exit".equalsIgnoreCase(input)) {
                     logger.info("Завершение работы программы...");
-                    collectionManager.saveCollection(dumpManager);
+                    //collectionManager.saveCollection(dumpManager);
                     System.exit(0);
                 } else if ("save".equalsIgnoreCase(input)) {
                     logger.info("Сохранение коллекции...");

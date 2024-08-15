@@ -9,6 +9,9 @@ import java.net.*;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * Класс ClientHandler отвечает за управление соединением с сервером и отправку запросов.
+ */
 public class ClientHandler {
     private final String host;
     private final int port;
@@ -22,6 +25,9 @@ public class ClientHandler {
         initializeConnection();
     }
 
+    /**
+     * Инициализирует соединение с сервером.
+     */
     private void initializeConnection() {
         try {
             socket = new DatagramSocket();
@@ -31,6 +37,12 @@ public class ClientHandler {
         }
     }
 
+    /**
+     * Отправляет запрос на сервер и ожидает ответа.
+     *
+     * @param request запрос для отправки
+     * @return ответ от сервера
+     */
     public Answer sendRequest(Request request) {
         try {
             boolean requestSent = false;
@@ -50,11 +62,24 @@ public class ClientHandler {
         }
     }
 
+    /**
+     * Отправляет запрос на сервер.
+     *
+     * @param request запрос для отправки
+     * @throws IOException если возникает ошибка при отправке запроса
+     */
     private void writeRequest(Request request) throws IOException {
         ClientWriter writer = new ClientWriter(socket, new InetSocketAddress(host, port));
         writer.send(request);
     }
 
+    /**
+     * Читает ответ от сервера.
+     *
+     * @return ответ от сервера
+     * @throws IOException если возникает ошибка при чтении ответа
+     * @throws ClassNotFoundException если полученный объект не является экземпляром класса Answer
+     */
     private Answer readResponse() throws IOException, ClassNotFoundException {
         ClientReader reader = new ClientReader(socket);
         reader.read();
@@ -62,7 +87,7 @@ public class ClientHandler {
         if (receivedObject instanceof Answer) {
             return (Answer) receivedObject;
         } else {
-            throw new ClassNotFoundException("Received object is not an instance of Answer.");
+            throw new ClassNotFoundException("Полученный объект не является экземпляром Answer.");
         }
     }
 

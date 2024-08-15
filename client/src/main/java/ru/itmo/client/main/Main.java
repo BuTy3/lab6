@@ -18,8 +18,8 @@ public class Main {
         console.setErr(System.err);
         InputSteamer.setScanner(new Scanner(System.in));
         // Параметры подключения
-        String host = "localhost";
-        int port = 23982;
+        String host = "localhost"; //scp -rP 2222 lab6 s412991@helios.cs.ifmo.ru:~/   export GROUPS_FILE_PATH=data/file.json
+        int port = 4202;
 
         // Инициализация менеджера команд
         CommandManager.initClientCommands(console, new StudyGroupForm());

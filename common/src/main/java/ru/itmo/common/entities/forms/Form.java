@@ -12,4 +12,5 @@ public abstract class Form<T> {
      * @throws InvalidFormException        если введены некорректные данные вручную
      */
     public abstract T build() throws InvalidScriptInputException, InvalidFormException;
+
 }
