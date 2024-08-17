@@ -48,8 +48,7 @@ public class DatabaseManager {
      * @throws SQLException Если происходит ошибка SQL.
      */
     private static boolean checkDatabaseExists(Connection connection) throws SQLException {
-        return connection.getMetaData().getCatalogs()
-                .next(); // Check if the database exists by attempting to move to the first entry
+        return connection.getMetaData().getCatalogs().next();
     }
 
     /**
