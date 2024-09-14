@@ -1,13 +1,12 @@
 package ru.itmo.common.commands;
 
-import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.entities.StudyGroup;
-import ru.itmo.common.entities.forms.StudyGroupForm;
+import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.exception.*;
+import ru.itmo.common.io.Console;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
 
 
 public class Update extends Command {
@@ -41,11 +40,12 @@ public class Update extends Command {
             if (groupCollectionManager.collectionSize() == 0) throw new EmptyValueException();
 
             var new_group = ((StudyGroup) request.getData());
+            new_group.setUsername(request.getLogin());
             var id = new_group.getId();
             var group = groupCollectionManager.get(id);
             if (group == null) throw new NotFoundException();
 
-            if (groupCollectionManager.update(id, new_group))
+            if (groupCollectionManager.update(id, new_group, request.getLogin()))
                 return new Answer(true, "Группа успешно обновлен.");
             else {
                 return new Answer(false, "Группа не обновлена, неизвестная ошибка");
@@ -55,8 +55,7 @@ public class Update extends Command {
         } catch (NotFoundException exception) {
             return new Answer(false, "Группы с таким ID в коллекции нет!");
         } catch (Exception e) {
-            return new Answer(false, "Неизвестная ошибка");
-
+            return new Answer(false, "Неизвестная ошибка", e.toString());
         }
 
     }

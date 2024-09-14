@@ -1,8 +1,14 @@
 package ru.itmo.client.network;
 
 import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.CRC32;
 
 public class ClientReader {
@@ -20,7 +26,7 @@ public class ClientReader {
      * Читает и собирает данные, полученные по UDP сокету, с проверкой целостности и повторным запросом
      * недостающих пакетов при необходимости.
      *
-     * @throws IOException если возникает ошибка ввода-вывода при получении данных.
+     * @throws IOException            если возникает ошибка ввода-вывода при получении данных.
      * @throws ClassNotFoundException если возникла ошибка при реконструкции объекта.
      */
     public void read() throws IOException, ClassNotFoundException {
@@ -91,7 +97,7 @@ public class ClientReader {
     /**
      * Собирает объект из полученных пакетов данных.
      *
-     * @throws IOException если возникает ошибка ввода-вывода при сборке объекта.
+     * @throws IOException            если возникает ошибка ввода-вывода при сборке объекта.
      * @throws ClassNotFoundException если класс объекта не найден при десериализации.
      */
     private void reassembleObject() throws IOException, ClassNotFoundException {

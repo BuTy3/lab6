@@ -8,7 +8,6 @@ public class History extends Command {
 
     /**
      * Конструктор для создания экземпляра команды History.
-     *
      */
     public History() {
         super(CommandName.HISTORY, "вывести список использованных команд");

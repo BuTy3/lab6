@@ -1,7 +1,7 @@
 package ru.itmo.common.commands;
 
-import ru.itmo.common.network.Answer;
 import ru.itmo.common.io.Console;
+import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
 
 public class Exit extends Command {
@@ -9,11 +9,11 @@ public class Exit extends Command {
 
     /**
      * Конструктор для создания экземпляра команды Exit.
-     *
      */
     public Exit() {
         super(CommandName.EXIT, "завершить работу приложения");
     }
+
     /**
      * Конструктор для создания экземпляра команды Exit.
      *
@@ -23,6 +23,7 @@ public class Exit extends Command {
         this();
         this.console = console;
     }
+
     /**
      * Выполняет команду.
      *
@@ -33,10 +34,11 @@ public class Exit extends Command {
     public Answer execute(Request arguments) {
         try {
             return new Answer(true, null);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new Answer(false, e.toString());
         }
     }
+
     /**
      * Выполняет команду
      *

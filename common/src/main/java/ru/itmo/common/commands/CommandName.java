@@ -17,6 +17,8 @@ public enum CommandName {
     EXECUTE_SCRIPT,//
     MIN_BY_GROUP_ADMIN,//
     EXIT_SERVER, //
-    REMOVE_GREATER//
+    REMOVE_GREATER, //
+    LOGIN, //
+    REGISTER //
 }
 

@@ -5,9 +5,8 @@ import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
 
 import java.io.IOException;
-import java.net.*;
-import java.util.Iterator;
-import java.util.Set;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 
 /**
  * Класс ClientHandler отвечает за управление соединением с сервером и отправку запросов.
@@ -77,7 +76,7 @@ public class ClientHandler {
      * Читает ответ от сервера.
      *
      * @return ответ от сервера
-     * @throws IOException если возникает ошибка при чтении ответа
+     * @throws IOException            если возникает ошибка при чтении ответа
      * @throws ClassNotFoundException если полученный объект не является экземпляром класса Answer
      */
     private Answer readResponse() throws IOException, ClassNotFoundException {

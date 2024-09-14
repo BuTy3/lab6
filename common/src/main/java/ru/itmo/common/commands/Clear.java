@@ -25,7 +25,7 @@ public class Clear extends Command {
     @Override
     public Answer execute(Request arguments) {
         try {
-            studyGroupCollectionManager.clear();
+            studyGroupCollectionManager.clear(arguments.getLogin());
             return new Answer(true, "Коллекция очищена!");
         } catch (Exception e) {
             return new Answer(false, e.toString());

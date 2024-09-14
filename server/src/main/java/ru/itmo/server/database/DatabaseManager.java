@@ -1,42 +1,69 @@
 package ru.itmo.server.database;
 
-import ru.itmo.server.dao.StudyGroupsTable;
-import ru.itmo.server.dao.UsersTable;
-import ru.itmo.server.main.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.itmo.server.dao.StudyGroupDAO;
+import ru.itmo.server.dao.UserDAO;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import static ru.itmo.server.database.ConnectionManager.dbName;
+import static ru.itmo.server.database.ConnectionManager.executeUpdate;
+
+
 /**
- * Класс для управления базой данных, создания базы данных и необходимых таблиц.
+ * Класс {@code DatabaseManager} управляет операциями с базой данных, включая её создание,
+ * создание таблиц и управление пользователями.
+ * <p>
+ * Этот класс обеспечивает взаимодействие с базой данных, гарантируя, что необходимые
+ * таблицы созданы, и предоставляет методы для получения соединений с базой данных.
  */
 public class DatabaseManager {
-    private static final UsersTable usersTable = new UsersTable();
-    private static final StudyGroupsTable studyGroupsTable = new StudyGroupsTable();
+    private static final UserDAO userDAO = new UserDAO();
+    private static final StudyGroupDAO studyGroupDAO = new StudyGroupDAO();
+    private static final Logger logger = LoggerFactory.getLogger("DatabaseManager");
+    private static final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
+
 
     /**
-     * Создает базу данных, если она еще не существует, и инициализирует таблицы.
+     * Возвращает соединение с базой данных для текущего потока.
+     * Если соединение не установлено или закрыто, оно создается заново.
      *
-     * @return Соединение с базой данных.
+     * @return Объект {@link Connection}, представляющий соединение с базой данных.
+     * @throws SQLException Если возникает ошибка при попытке установить соединение.
      */
-    public static Connection createDatabaseIfNotExists() {
-        try (Connection connection = ConnectionManager.getConnection()) {
+    public static Connection getConnection() throws SQLException {
+        Connection connection = threadLocalConnection.get();
+
+        if (connection == null || connection.isClosed()) {
+            connection = ConnectionManager.getConnection();
+            threadLocalConnection.set(connection);
+        }
+
+        return connection;
+    }
+
+    /**
+     * Создаёт базу данных, если она еще не существует, и инициализирует таблицы.
+     * Если база данных уже существует, создаются только отсутствующие таблицы.
+     */
+    public static void createDatabaseIfNotExists() {
+        try (Connection connection = getConnection()) {
             if (connection != null) {
                 boolean databaseExists = checkDatabaseExists(connection);
                 if (!databaseExists) {
-                    Main.logger.info("Database and tables created successfully.");
+                    executeUpdate(connection, "CREATE DATABASE " + dbName);
+                    logger.info("База данных и таблицы успешно созданы.");
                 } else {
-                    Main.logger.info("Database already exists.");
+                    logger.info("База данных уже существует.");
                 }
-                createTables(connection);
-                return connection;
+                createTablesIfNotExist(connection);
             } else {
-                Main.logger.error("Failed to establish connection to the database.");
-                return connection;
+                logger.error("Не удалось установить соединение с базой данных.");
             }
         } catch (SQLException e) {
-            Main.logger.error("Error while creating database: {}", e.getMessage());
-            return null;
+            logger.error("Ошибка при создании базы данных: {}", e.getMessage());
         }
     }
 
@@ -44,12 +71,11 @@ public class DatabaseManager {
      * Проверяет, существует ли база данных.
      *
      * @param connection Соединение с базой данных.
-     * @return True, если база данных существует, false в противном случае.
-     * @throws SQLException Если происходит ошибка SQL.
+     * @return {@code true}, если база данных существует, иначе {@code false}.
+     * @throws SQLException Если возникает ошибка при выполнении SQL-запроса.
      */
     private static boolean checkDatabaseExists(Connection connection) throws SQLException {
-        return connection.getMetaData().getCatalogs()
-                .next(); // Check if the database exists by attempting to move to the first entry
+        return connection.getMetaData().getCatalogs().next();
     }
 
     /**
@@ -57,13 +83,18 @@ public class DatabaseManager {
      *
      * @param connection Соединение с базой данных.
      */
-    public static void createTables(Connection connection) {
+    public static void createTablesIfNotExist(Connection connection) {
         if (connection != null) {
-            usersTable.create_table();
-            studyGroupsTable.create_table();
-            Main.logger.info("Tables created successfully (if not existed).");
+            try {
+                userDAO.createUsersTable(connection);
+                studyGroupDAO.createStudyGroupTable(connection);
+                logger.info("Таблицы успешно созданы (если они не существовали).");
+            } catch (SQLException e) {
+                throw new RuntimeException("Ошибка при создании таблиц: ", e);
+            }
         } else {
-            Main.logger.error("Connection is null.");
+            logger.error("Соединение равно null.");
         }
     }
+
 }

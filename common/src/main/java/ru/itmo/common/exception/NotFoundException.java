@@ -5,9 +5,11 @@ package ru.itmo.common.exception;
  */
 public class NotFoundException extends Exception {
     private String message;
-    public NotFoundException(){
+
+    public NotFoundException() {
         this.message = "";
     }
+
     public NotFoundException(String message) {
         this.message = message;
     }

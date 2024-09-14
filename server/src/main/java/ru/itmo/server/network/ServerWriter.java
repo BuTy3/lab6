@@ -3,8 +3,13 @@ package ru.itmo.server.network;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketAddress;
 import java.util.zip.CRC32;
 
 /**
@@ -12,10 +17,9 @@ import java.util.zip.CRC32;
  */
 public class ServerWriter {
     private static final Logger logger = LoggerFactory.getLogger(ServerWriter.class);
-
+    private static final int PACKET_SIZE = 1024;
     private final DatagramSocket socket;
     private final SocketAddress clientAddress;
-    private static final int PACKET_SIZE = 1024;
 
     public ServerWriter(DatagramSocket socket, SocketAddress clientAddress) {
         this.socket = socket;

@@ -1,72 +1,83 @@
 package ru.itmo.common.entities;
 
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 /**
- * Класс, представляющий пользователя системы.
- *
- * @author steepikk
+ * The {@code User} class represents a user in the system.
+ * It encapsulates information about the user, including their ID, username, password hash, salt, and registration date.
+ * This class is used for managing user authentication and registration.
  */
-public class User implements Comparable<User>, Serializable {
-    private final int id;
-    private final String name;
-    private final String password;
+@Getter
+public class User {
+    private final String username;
+    private final String passwordHash;
+    private final String salt;
+    private final LocalDateTime registrationDate;
+    @Setter
+    private Integer id;
 
     /**
-     * Конструктор для создания объекта пользователя.
+     * Constructs a new user object with the specified parameters.
      *
-     * @param id       ID пользователя.
-     * @param name     Имя пользователя.
-     * @param password Пароль пользователя.
+     * @param username         the username of the user
+     * @param passwordHash     the hashed password of the user
+     * @param salt             the salt used for password hashing
+     * @param registrationDate the registration date of the user
      */
-    public User(int id, String name, String password) {
+    public User(String username, String passwordHash, String salt, LocalDateTime registrationDate) {
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.salt = salt;
+        this.registrationDate = registrationDate;
+    }
+
+    /**
+     * Constructs a new user object with the specified parameters.
+     *
+     * @param id               the ID of the user
+     * @param username         the username of the user
+     * @param passwordHash     the hashed password of the user
+     * @param salt             the salt used for password hashing
+     * @param registrationDate the registration date of the user
+     */
+    public User(Integer id, String username, String passwordHash, String salt, LocalDateTime registrationDate) {
+        this(username, passwordHash, salt, registrationDate);
         this.id = id;
-        this.name = name;
-        this.password = password;
     }
 
     /**
-     * Проверяет, допустима ли информация о пользователе.
+     * Returns a string representation of the user.
      *
-     * @return true, если длина имени пользователя меньше 40 символов, иначе false.
+     * @return a string representation of the user
      */
-    public boolean validate() {
-        return getName().length() < 40;
-    }
-
-    /**
-     * Создает копию пользователя с новым ID.
-     *
-     * @param id Новый ID для копии пользователя.
-     * @return Новый объект пользователя с указанным ID.
-     */
-    public User copy(int id) {
-        return new User(id, getName(), getPassword());
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    @Override
-    public int compareTo(User user) {
-        return (int) (this.id - user.getId());
-    }
-
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
-                ", password='********'" +
+                ", username='" + username + '\'' +
+                ", passwordHash='" + passwordHash + '\'' +
+                ", salt='" + salt + '\'' +
+                ", registrationDate=" + registrationDate +
                 '}';
+    }
+
+    /**
+     * Validates whether the user object is valid.
+     * It checks if the password hash and salt are not null and have a minimum length of 8 characters,
+     * and if the registration date is not null.
+     *
+     * @return true if the user object is valid, false otherwise
+     */
+    public boolean validate() {
+        if (passwordHash == null || passwordHash.length() < 8) {
+            return false;
+        }
+        if (salt == null || salt.length() < 8) {
+            return false;
+        }
+        return registrationDate != null;
     }
 }

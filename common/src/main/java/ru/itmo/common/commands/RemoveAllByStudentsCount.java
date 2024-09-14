@@ -3,12 +3,13 @@ package ru.itmo.common.commands;
 import ru.itmo.common.entities.StudyGroup;
 import ru.itmo.common.exception.EmptyValueException;
 import ru.itmo.common.exception.InvalidNumberOfElementsException;
+import ru.itmo.common.io.Console;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RemoveAllByStudentsCount extends Command {
     private Console console;

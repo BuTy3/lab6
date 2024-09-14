@@ -4,10 +4,10 @@ import ru.itmo.common.entities.StudyGroup;
 import ru.itmo.common.exception.EmptyValueException;
 import ru.itmo.common.exception.InvalidNumberOfElementsException;
 import ru.itmo.common.exception.NotFoundException;
+import ru.itmo.common.io.Console;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
 
 public class RemoveAt extends Command {
     private Console console;
@@ -40,7 +40,9 @@ public class RemoveAt extends Command {
             if (groupCollectionManager.collectionSize() == 0) throw new EmptyValueException();
 
             var id = ((Integer) request.getData());
-            if (!groupCollectionManager.getCollection().remove(id)) throw new NotFoundException();
+            var group = groupCollectionManager.getCollection().get(id);
+            if (group == null) throw new NotFoundException();
+            if (!groupCollectionManager.remove(group.getId(), request.getLogin())) throw new NotFoundException();
 
             return new Answer(true, "Группа успешно удалена.");
 

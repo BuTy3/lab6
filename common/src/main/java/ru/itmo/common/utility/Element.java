@@ -12,7 +12,9 @@ public abstract class Element<T> implements Comparable<T>, Validatable, Serializ
      * @return Идентификатор элемента.
      */
     abstract public Long getId();
+
     abstract public void setId(Long id);
+
     /**
      * Возвращает имя элемента.
      *

@@ -7,12 +7,13 @@ import ru.itmo.common.network.Request;
 
 public class ExitServer extends Command {
     private CollectionManager groupCollectionManager;
+
     public ExitServer() {
         super(CommandName.EXIT_SERVER, "завершить программу (с сохранением в файл)");
     }
+
     /**
      * Конструктор для создания экземпляра команды Exit.
-     *
      */
     public ExitServer(CollectionManager<StudyGroup> groupCollectionManager) {
         this();
@@ -29,7 +30,7 @@ public class ExitServer extends Command {
     public Answer execute(Request arguments) {
         try {
             return new Answer(true, null);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new Answer(false, e.toString());
         }
     }

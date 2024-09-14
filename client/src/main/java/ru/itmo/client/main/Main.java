@@ -1,12 +1,11 @@
 package ru.itmo.client.main;
 
 import ru.itmo.client.network.ClientHandler;
+import ru.itmo.client.runtime.Runner;
 import ru.itmo.common.entities.forms.StudyGroupForm;
-import ru.itmo.common.io.Console;
 import ru.itmo.common.io.InputSteamer;
 import ru.itmo.common.io.StandartConsole;
 import ru.itmo.common.managers.CommandManager;
-import ru.itmo.client.runtime.Runner;
 
 import java.util.Scanner;
 

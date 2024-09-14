@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * Обеспечивает ввод команд и вывод результатов в стандартной консоли.
- *
  */
 public class StandartConsole implements Console {
     private static final String PROMPT = "> ";
@@ -146,7 +145,7 @@ public class StandartConsole implements Console {
          * Переопределение метода write(byte[] b, int off, int len) из класса OutputStream.
          * Записывает часть массива байтов в поток вывода.
          *
-         * @param b массив байтов для записи в поток вывода.
+         * @param b   массив байтов для записи в поток вывода.
          * @param off смещение в массиве, с которого начинается чтение байтов.
          * @param len количество байтов для записи.
          * @throws IOException если произошла ошибка ввода-вывода при записи в поток вывода.

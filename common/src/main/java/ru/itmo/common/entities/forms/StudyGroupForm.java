@@ -3,7 +3,6 @@ package ru.itmo.common.entities.forms;
 import ru.itmo.common.entities.*;
 import ru.itmo.common.exception.InvalidFormException;
 import ru.itmo.common.exception.InvalidScriptInputException;
-import ru.itmo.common.io.InputSteamer;
 import ru.itmo.common.utility.InputParser;
 
 public class StudyGroupForm extends Form<StudyGroup> {

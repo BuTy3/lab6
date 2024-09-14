@@ -1,14 +1,14 @@
 package ru.itmo.common.commands;
 
-import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.entities.StudyGroup;
+import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.exception.InvalidFormException;
 import ru.itmo.common.exception.InvalidNumberOfElementsException;
 import ru.itmo.common.exception.InvalidScriptInputException;
+import ru.itmo.common.io.Console;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
 
 public class Add extends Command {
     private Console console;
@@ -36,13 +36,14 @@ public class Add extends Command {
     }
 
     @Override
-    public Answer execute(Request answer) {
+    public Answer execute(Request request) {
         try {
-            var group = ((StudyGroup)answer.getData());
+            var group = ((StudyGroup) request.getData());
+            group.setUsername(request.getLogin());
             if (!group.validate()) {
                 return new Answer(false, "Группа не добавлена, поля не валидны!");
             }
-            if(!studyGroupCollectionManager.add(group))
+            if (!studyGroupCollectionManager.add(group))
                 return new Answer(false, "Группа уже существует", -1);
             return new Answer(true, "Группа добавлена", group.getId());
         } catch (Exception e) {

@@ -2,12 +2,12 @@ package ru.itmo.common.commands;
 
 import ru.itmo.common.entities.StudyGroup;
 import ru.itmo.common.exception.EmptyValueException;
+import ru.itmo.common.exception.InvalidNumberOfElementsException;
 import ru.itmo.common.exception.NotFoundException;
+import ru.itmo.common.io.Console;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
-import ru.itmo.common.exception.InvalidNumberOfElementsException;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +45,7 @@ public class Remove_by_id extends Command {
 //            var id = ((long) request.getData());
 //            long id = ((Number) request.getData()).longValue();
             long id = (long) request.getData();
-            if (!groupCollectionManager.remove(id)) throw new NotFoundException();
+            if (!groupCollectionManager.remove(id, request.getLogin())) throw new NotFoundException();
 
             return new Answer(true, "Группа успешно удалена.");
 
@@ -76,6 +76,7 @@ public class Remove_by_id extends Command {
             return new Request(false, getName(), "ID должен быть представлен числом!");
         }
     }
+
     /**
      * Удаляет все учебные группы из коллекции, у которых количество студентов равно заданному значению.
      *

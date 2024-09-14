@@ -4,10 +4,13 @@ package ru.itmo.server.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.itmo.common.entities.StudyGroup;
+import ru.itmo.common.entities.User;
 import ru.itmo.common.io.Console;
 import ru.itmo.common.io.StandartConsole;
 import ru.itmo.common.managers.CommandManager;
-import ru.itmo.server.managers.DumpManager;
+import ru.itmo.server.dao.StudyGroupDAO;
+import ru.itmo.server.dao.UserDAO;
+import ru.itmo.server.database.DatabaseManager;
 import ru.itmo.server.managers.StudyGroupCollectionManager;
 import ru.itmo.server.network.Server;
 
@@ -38,37 +41,24 @@ public class Main {
             }
         }
 
-        DumpManager<StudyGroup> dumpManager = new DumpManager<>(filePath, StudyGroup.class);
         StudyGroupCollectionManager groupCollection = new StudyGroupCollectionManager();
-        groupCollection.loadCollection(dumpManager);
-        startConsoleListener(groupCollection, dumpManager);
-        addShutdownHook(groupCollection, dumpManager);
+        DatabaseManager.createDatabaseIfNotExists();
+        StudyGroupDAO studyGroupDAO = new StudyGroupDAO();
+        UserDAO userDAO = new UserDAO();
+        groupCollection.loadCollection(studyGroupDAO);
+        startConsoleListener(groupCollection);
 
-        CommandManager.initServerCommands(groupCollection);
+        CommandManager.initServerCommands(groupCollection, userDAO);
         Server server = new Server(PORT);
         server.start();
-    }
-
-    /**
-     * Метод добавляет обработчик завершения работы приложения для сохранения коллекции.
-     *
-     * @param collectionManager менеджер коллекции
-     * @param dumpManager       менеджер для дампа коллекции в файл
-     */
-    private static void addShutdownHook(StudyGroupCollectionManager collectionManager, DumpManager<StudyGroup> dumpManager) {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Сохранение коллекции перед завершением работы...");
-            collectionManager.saveCollection(dumpManager);
-        }));
     }
 
     /**
      * Метод запускает слушатель консоли для ввода команд пользователем.
      *
      * @param collectionManager менеджер коллекции
-     * @param dumpManager       менеджер для дампа коллекции в файл
      */
-    private static void startConsoleListener(StudyGroupCollectionManager collectionManager, DumpManager<StudyGroup> dumpManager) {
+    private static void startConsoleListener(StudyGroupCollectionManager collectionManager) {
         new Thread(() -> {
             Scanner scanner = new Scanner(System.in);
             while (true) {
@@ -77,9 +67,6 @@ public class Main {
                     logger.info("Завершение работы программы...");
                     //collectionManager.saveCollection(dumpManager);
                     System.exit(0);
-                } else if ("save".equalsIgnoreCase(input)) {
-                    logger.info("Сохранение коллекции...");
-                    collectionManager.saveCollection(dumpManager);
                 } else {
                     logger.warn("Неизвестная команда: {}", input);
                 }

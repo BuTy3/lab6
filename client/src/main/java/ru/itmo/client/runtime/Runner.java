@@ -1,11 +1,15 @@
 package ru.itmo.client.runtime;
 
-import ru.itmo.common.commands.Command;
-import ru.itmo.common.exception.ScriptRecursionException;
-import ru.itmo.common.io.*;
-import ru.itmo.common.managers.CommandManager;
-import ru.itmo.common.network.*;
 import ru.itmo.client.network.ClientHandler;
+import ru.itmo.common.commands.Command;
+import ru.itmo.common.commands.CommandName;
+import ru.itmo.common.exception.RequestException;
+import ru.itmo.common.exception.ScriptRecursionException;
+import ru.itmo.common.io.Console;
+import ru.itmo.common.io.InputSteamer;
+import ru.itmo.common.managers.CommandManager;
+import ru.itmo.common.network.Answer;
+import ru.itmo.common.network.Request;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,17 +19,13 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Runner {
-    public enum ExitCode {
-        OK,
-        ERROR,
-        EXIT,
-    }
-
     private final Console console;
     private final ClientHandler clientHandler;
     private final List<String> commandHistory = new ArrayList<>();
     private final List<String> scriptStack = new ArrayList<>();
     private final CommandManager commandManager;
+    private String login;
+    private String password;
 
     public Runner(ClientHandler clientHandler, Console console) {
         this.clientHandler = clientHandler;
@@ -128,14 +128,22 @@ public class Runner {
      */
     private ExitCode launchCommand(String[] userCommand) {
         if (userCommand[0].isEmpty()) return ExitCode.OK;
-        if(userCommand[0].equals("execute_script")){
+        if (userCommand[0].equals("execute_script")) {
             return scriptMode(userCommand[1]);
         }
         Answer response = null;
         try {
-            Command command = commandManager.getCommands().get(userCommand[0]);
+            Command command = CommandManager.getCommands().get(userCommand[0]);
             Request request = (command == null) ? null : command.execute(userCommand);
             if (request != null) {
+                if(!request.isSuccess()) throw new RequestException(request.getData().toString());
+                if (request.getCommand().equals("register") || request.getCommand().equals("login")) {
+                    login = request.getLogin();
+                    password = request.getPassword();
+                } else {
+                    request.setLogin(login);
+                    request.setPassword(password);
+                }
                 if (request.getCommand().equals("help")) {
                     console.println(request.getData());
                     return ExitCode.OK;
@@ -160,5 +168,11 @@ public class Runner {
         }
 
         return ExitCode.OK;
+    }
+
+    public enum ExitCode {
+        OK,
+        ERROR,
+        EXIT,
     }
 }

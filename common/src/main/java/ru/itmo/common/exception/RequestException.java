@@ -5,9 +5,11 @@ package ru.itmo.common.exception;
  */
 public class RequestException extends Exception {
     private String message;
-    public RequestException(){
+
+    public RequestException() {
         this.message = "";
     }
+
     public RequestException(String message) {
         this.message = message;
     }

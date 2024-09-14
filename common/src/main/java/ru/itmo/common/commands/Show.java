@@ -11,6 +11,7 @@ public class Show extends Command {
     public Show() {
         super(CommandName.SHOW, "вывести все элементы коллекции StudyGroup");
     }
+
     /**
      * Конструктор для создания экземпляра команды Show.
      *
@@ -33,6 +34,7 @@ public class Show extends Command {
         String message = groupCollectionManager.getCollection().toString();
         return new Answer(true, null, message);
     }
+
     /**
      * Выполняет команду
      *

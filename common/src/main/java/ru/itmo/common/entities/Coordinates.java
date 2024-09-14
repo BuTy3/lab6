@@ -1,12 +1,6 @@
 package ru.itmo.common.entities;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import ru.itmo.common.utility.Validatable;
 
 import java.io.Serializable;

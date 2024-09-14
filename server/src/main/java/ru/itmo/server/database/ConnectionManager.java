@@ -1,31 +1,70 @@
 package ru.itmo.server.database;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
-import ru.itmo.server.main.Main;
+import java.util.Properties;
 
 /**
  * Класс для управления подключениями к базе данных и выполнения SQL-запросов.
  */
 public class ConnectionManager {
-//    public static final String DB_URL = "jdbc:postgresql://pg:5432/";
-//    public static final String DB_NAME = "studs";
-    public static final String DB_URL = "jdbc:postgresql://localhost:5432/";
-    public static final String DB_NAME = "lab6java";
-    private static final String USER = "postgres";
-    private static final String PASSWORD = "WoT1234567890";
+    public static final String dbName;
+    private static final Logger LOGGER = LoggerFactory.getLogger("ConnectionManager");
+    private static String dbUrl;
+    private static String user;
+    private static String password;
+
+    static {
+        InputStream input = null;
+        try {
+            input = ConnectionManager.class.getClassLoader().getResourceAsStream("database.properties");
+            if (input == null) {
+                LOGGER.error("Не удалось найти файл свойств");
+                throw new RuntimeException("Не удалось найти файл свойств");
+            }
+
+            Properties properties = new Properties();
+            properties.load(input);
+
+            dbUrl = properties.getProperty("db.url");
+            dbName = properties.getProperty("db.name");
+            user = properties.getProperty("db.user");
+            password = properties.getProperty("db.password");
+
+            // Проверка на наличие необходимых значений
+            if (dbUrl == null || dbName == null || user == null || password == null) {
+                LOGGER.error("Один или несколько параметров подключения отсутствуют в файле свойств");
+                throw new RuntimeException("Один или несколько параметров подключения отсутствуют в файле свойств");
+            }
+        } catch (IOException e) {
+            LOGGER.error("Ошибка при загрузке файла свойств", e);
+            throw new RuntimeException("Ошибка при загрузке файла свойств", e);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    LOGGER.error("Ошибка при закрытии файла свойств", e);
+                }
+            }
+        }
+    }
 
     /**
      * Получает соединение с базой данных.
      *
-     * @return Соединение с базой данных.
+     * @return Объект {@link Connection}, представляющий соединение с базой данных, или {@code null}, если соединение не удалось установить.
      */
     public static Connection getConnection() {
         try {
-//            return DriverManager.getConnection(DB_URL + DB_NAME);
-            return DriverManager.getConnection(DB_URL + DB_NAME, USER, PASSWORD);
+            // Возвращаем соединение с базой данных с использованием указанных учетных данных.
+            return DriverManager.getConnection(dbUrl + dbName, user, password);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-//            Main.logger.error("Connection failed", e);
+            logError("Не удалось установить соединение", e);
             return null;
         }
     }
@@ -33,64 +72,97 @@ public class ConnectionManager {
     /**
      * Закрывает соединение с базой данных.
      *
-     * @param connection Соединение с базой данных для закрытия.
+     * @param connection Соединение с базой данных, которое нужно закрыть.
      */
     public static void closeConnection(Connection connection) {
         if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
-                System.out.println(e.getMessage());
-//                Main.logger.error("Error closing connection", e);
+                logError("Ошибка при закрытии соединения", e);
             }
         }
     }
 
     /**
-     * Создает объект Statement для выполнения SQL-запросов.
+     * Логгирует сообщение об ошибке с возможностью указания исключения {@link SQLException}.
+     *
+     * @param message Сообщение об ошибке.
+     * @param e       Исключение, вызвавшее ошибку (может быть {@code null}).
+     */
+    private static void logError(String message, SQLException e) {
+        if (e == null) {
+            LOGGER.error(message);
+        } else {
+            LOGGER.error("{}: {}", message, e.getMessage());
+        }
+    }
+
+    /**
+     * Создает SQL-запрос с помощью указанного соединения.
      *
      * @param connection Соединение с базой данных.
-     * @return Объект Statement для выполнения SQL-запросов или null, если не удалось создать Statement.
+     * @return Объект {@link Statement}, представляющий SQL-запрос, или {@code null}, если не удалось создать запрос.
      */
     private static Statement createStatement(Connection connection) {
         if (connection == null) {
+            logError("Соединение равно null", null);
             return null;
         }
         try {
             return connection.createStatement();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-//            Main.logger.error("Error creating statement", e);
+            logError("Ошибка при создании запроса", e);
             return null;
         }
     }
 
     /**
-     * Выполняет SQL-запрос на обновление, используя заданный объект Statement.
+     * Выполняет SQL-операцию обновления (например, INSERT, UPDATE, DELETE) с использованием указанного запроса.
      *
-     * @param statement Объект Statement для выполнения запроса.
-     * @param sql       SQL-запрос на обновление.
+     * @param statement SQL-запрос для выполнения.
+     * @param sql       SQL-команда для выполнения.
      */
     public static void executeUpdate(Statement statement, String sql) {
         if (statement == null) {
+            logError("Запрос равен null", null);
             return;
         }
         try {
             statement.executeUpdate(sql);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
-//            Main.logger.error("Error executing update", e);
+            logError("Ошибка при выполнении обновления", e);
         }
     }
 
     /**
-     * Выполняет SQL-запрос на обновление, используя заданное соединение.
+     * Выполняет SQL-операцию обновления с использованием указанного соединения.
      *
      * @param connection Соединение с базой данных.
-     * @param sql        SQL-запрос на обновление.
+     * @param sql        SQL-команда для выполнения.
      */
     public static void executeUpdate(Connection connection, String sql) {
         Statement statement = createStatement(connection);
         executeUpdate(statement, sql);
+    }
+
+    /**
+     * Выполняет SQL-операцию обновления с использованием подготовленного SQL-запроса ({@link PreparedStatement}).
+     *
+     * @param statement Подготовленный SQL-запрос для выполнения.
+     * @return Результат выполнения запроса (количество затронутых строк), или -1 в случае ошибки.
+     */
+    public static int executePrepareUpdate(PreparedStatement statement) {
+        if (statement == null) {
+            logError("Запрос равен null", null);
+            return -1;
+        } else {
+            try {
+                return statement.executeUpdate();
+            } catch (SQLException e) {
+                logError("Ошибка при выполнении подготовленного обновления", e);
+                return -1;
+            }
+        }
     }
 }

@@ -5,7 +5,6 @@ import ru.itmo.common.utility.Element;
 import ru.itmo.common.utility.Validatable;
 
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.Date;
 
 /**
@@ -27,6 +26,7 @@ public class StudyGroup extends Element<StudyGroup> implements Validatable, Comp
     private FormOfEducation formOfEducation; //Поле может быть null
     private Semester semesterEnum; //Поле может быть null
     private Person groupAdmin; //Поле может быть null
+    private String username;
 
     /**
      * Создает новый объект StudyGroup с указанными параметрами.

@@ -14,7 +14,11 @@ public interface Execute {
      * @param arguments Аргументы команды.
      * @return Ответ на выполнение команды.
      */
-    default Answer execute(Request arguments){return null;};
+    default Answer execute(Request arguments) {
+        return null;
+    }
+
+    ;
 
     /**
      * Выполнить команду с заданными аргументами.
@@ -22,5 +26,9 @@ public interface Execute {
      * @param arguments Аргументы команды в виде массива строк.
      * @return Ответ на выполнение команды.
      */
-    default Request execute(String[] arguments){return null;};
+    default Request execute(String[] arguments) {
+        return null;
+    }
+
+    ;
 }

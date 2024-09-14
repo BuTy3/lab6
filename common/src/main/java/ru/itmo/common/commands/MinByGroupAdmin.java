@@ -10,7 +10,8 @@ import ru.itmo.common.network.Request;
 
 public class MinByGroupAdmin extends Command {
     private CollectionManager<StudyGroup> groupCollectionManager;
-    public MinByGroupAdmin(){
+
+    public MinByGroupAdmin() {
         super(CommandName.MIN_BY_GROUP_ADMIN, "вывести любой объект из коллекции, значение поля groupAdmin которого является минимальным");
     }
 

@@ -4,8 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.util.*;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.ForkJoinPool;
 import java.util.zip.CRC32;
 
 /**
@@ -22,6 +27,8 @@ public class ServerReader {
     private Object receivedObject;
     private SocketAddress clientAddress;
 
+    private final ForkJoinPool forkJoinPool = new ForkJoinPool();
+
     public ServerReader(DatagramSocket socket) {
         this.socket = socket;
     }
@@ -35,65 +42,23 @@ public class ServerReader {
      */
     public SocketAddress read() throws IOException, ClassNotFoundException {
         long startTime = System.currentTimeMillis();
-        while (true) {
-            byte[] buffer = new byte[2048];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+        byte[] buffer = new byte[2048];
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
-            try {
-                socket.receive(packet);
-            } catch (SocketTimeoutException e) {
-                break;
-            }
+        try {
+            socket.receive(packet);
 
             clientAddress = packet.getSocketAddress();
             logger.debug("Чтение запроса от: {}", clientAddress);
 
-            //для чтения данных из пакета
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
-            DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+            // для чтения данных из пакета
+            forkJoinPool.execute(new PacketHandler(packet));
+        } catch (SocketTimeoutException e) {
+        }
 
-            //парсинг данных
-            while (dataInputStream.available() > 20) {
-                int packetNumber = dataInputStream.readInt();
-                int totalPackets = dataInputStream.readInt();
-                long checksum = dataInputStream.readLong();
-                int length = dataInputStream.readInt();
-                byte[] data = new byte[length];
-                dataInputStream.readFully(data);
-
-                CRC32 crc = new CRC32();
-                crc.update(data);
-                if (crc.getValue() != checksum) {
-                    missingPackets.add(packetNumber);
-                    logger.warn("Checksum does not match for packet: " + packetNumber);
-                    continue;
-                }
-
-                //полученные пакеты
-                receivedPackets.put(packetNumber, data);
-
-                //общее кол-во пакетов
-                if (this.totalPackets == -1) {
-                    this.totalPackets = totalPackets;
-                }
-
-                // Проверка полученных и пропущенных пакетов
-                for (int i = 0; i < totalPackets; i++) {
-                    if (!receivedPackets.containsKey(i)) {
-                        missingPackets.add(i);
-                    } else {
-                        missingPackets.remove(i);
-                    }
-                }
-            }
-
-            if (missingPackets.isEmpty() && receivedPackets.size() == totalPackets) {
-                break;
-            }
-
-            if (System.currentTimeMillis() - startTime > 1000) {
-                break;
-            }
+        forkJoinPool.shutdown();
+        while (!forkJoinPool.isTerminated()) {
+            // Ожидание завершения всех потоков
         }
 
         // Проверка завершенности запроса и сборка объекта
@@ -106,6 +71,63 @@ public class ServerReader {
     }
 
     /**
+     * Класс, представляющий собой задачу для ForkJoinPool, которая обрабатывает пакет.
+     */
+    private class PacketHandler extends RecursiveAction {
+        private final DatagramPacket packet;
+
+        public PacketHandler(DatagramPacket packet) {
+            this.packet = packet;
+        }
+
+        @Override
+        protected void compute() {
+            try {
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(packet.getData(), 0, packet.getLength());
+                DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
+
+                while (dataInputStream.available() > 20) {
+                    logger.debug("Обрабатываем пакет");
+                    int packetNumber = dataInputStream.readInt();
+                    int totalPackets = dataInputStream.readInt();
+                    long checksum = dataInputStream.readLong();
+                    int length = dataInputStream.readInt();
+                    byte[] data = new byte[length];
+                    dataInputStream.readFully(data);
+
+                    CRC32 crc = new CRC32();
+                    crc.update(data);
+                    if (crc.getValue() != checksum) {
+                        missingPackets.add(packetNumber);
+                        logger.warn("Checksum does not match for packet: " + packetNumber);
+                        continue;
+                    }
+
+                    synchronized (receivedPackets) {
+                        receivedPackets.put(packetNumber, data);
+                    }
+                    logger.debug("da");
+                    synchronized (ServerReader.this) {
+                        if (ServerReader.this.totalPackets == -1) {
+                            ServerReader.this.totalPackets = totalPackets;
+                        }
+                        logger.debug("total packets: " + ServerReader.this.totalPackets);
+                        for (int i = 0; i < totalPackets; i++) {
+                            if (!receivedPackets.containsKey(i)) {
+                                missingPackets.add(i);
+                            } else {
+                                missingPackets.remove(i);
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                logger.error("Ошибка обработки пакета", e);
+            }
+        }
+    }
+
+    /**
      * Метод собирает полученные пакеты в объект.
      *
      * @throws IOException            если произошла ошибка ввода-вывода
@@ -114,7 +136,10 @@ public class ServerReader {
     private void reassembleObject() throws IOException, ClassNotFoundException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();  // Создание потока для записи данных в байтовый массив
         for (int i = 0; i < totalPackets; i++) {
-            byteArrayOutputStream.write(receivedPackets.get(i));
+            byte[] packetData = receivedPackets.get(i);
+            if (packetData != null) {
+                byteArrayOutputStream.write(packetData);
+            }
         }
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
@@ -129,11 +154,9 @@ public class ServerReader {
      * @throws IOException если произошла ошибка ввода-вывода
      */
     private void requestMissingPackets() throws IOException {
-        //для записи потока байтов в массив
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
 
-        //запись потерянных пакетов
         dataOutputStream.writeInt(missingPackets.size());
         for (Integer packetNumber : missingPackets) {
             dataOutputStream.writeInt(packetNumber);

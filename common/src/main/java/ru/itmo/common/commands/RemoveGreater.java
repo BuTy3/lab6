@@ -1,14 +1,15 @@
 package ru.itmo.common.commands;
 
-import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.entities.StudyGroup;
+import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.exception.InvalidFormException;
 import ru.itmo.common.exception.InvalidNumberOfElementsException;
 import ru.itmo.common.exception.InvalidScriptInputException;
+import ru.itmo.common.io.Console;
+import ru.itmo.common.io.StandartConsole;
 import ru.itmo.common.managers.CollectionManager;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
-import ru.itmo.common.io.Console;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +20,7 @@ public class RemoveGreater extends Command {
     private Form<StudyGroup> StForm;
 
     public RemoveGreater() {
-        super(CommandName.REMOVE_GREATER, "удалить из коллекции все элементы больше заданного");
+        super(CommandName.REMOVE_GREATER, " удалить из коллекции все элементы больше заданного");
     }
 
     public RemoveGreater(CollectionManager<StudyGroup> studyGroupCollectionManager) {
@@ -34,20 +35,23 @@ public class RemoveGreater extends Command {
     }
 
     @Override
-    public Answer execute(Request answer) {
+    public Answer execute(Request request) {
+        int count = 0;
         try {
-            var group = ((StudyGroup) answer.getData());
+            var group = ((StudyGroup) request.getData());
             for (StudyGroup c : studyGroupCollectionManager.getCollection()) {
-                if (c.compareTo(group) > 0)
-                    studyGroupCollectionManager.remove(c);
+                if (c.compareTo(group) > 0) {
+                    studyGroupCollectionManager.remove(c, request.getLogin());
+                    count++;
+                }
             }
         } catch (Exception e) {
-            return new Answer(false, e.toString(), -1);
+            return new Answer(false, e.toString(), count);
         }
-        return new Answer(true, "Команда выполнена успешно, удалено:", -1);
+        return new Answer(true, "Команда выполнена успешно, удалено:", count);
     }
 
-        /**
+    /**
      * Выполняет команду.
      *
      * @param arguments аргументы команды (ожидается отсутствие аргументов)
@@ -70,6 +74,7 @@ public class RemoveGreater extends Command {
             return new Request(false, getName(), "Ошибка чтения из скрипта");
         }
     }
+
     private void removeAllBy(int count) {
         Set<StudyGroup> toDel = new HashSet<>();
         for (StudyGroup studyGroup : studyGroupCollectionManager.getCollection()) {

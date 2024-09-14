@@ -7,7 +7,6 @@ public class Help extends Command {
 
     /**
      * Конструктор для создания экземпляра команды Help.
-     *
      */
     public Help() {
         super(CommandName.HELP, "вывести справку по доступным командам");

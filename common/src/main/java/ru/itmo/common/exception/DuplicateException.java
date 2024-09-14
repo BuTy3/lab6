@@ -21,7 +21,8 @@ public class DuplicateException extends Exception {
     /**
      * Пустой конструктор.
      */
-    public DuplicateException() {}
+    public DuplicateException() {
+    }
 
     /**
      * Получить объект-дубликат.

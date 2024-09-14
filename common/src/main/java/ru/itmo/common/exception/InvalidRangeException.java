@@ -1,7 +1,7 @@
 package ru.itmo.common.exception;
 
 /**
- *Что-то введено вне диапазона допустимых значений.
+ * Что-то введено вне диапазона допустимых значений.
  */
 public class InvalidRangeException extends Exception {
     private String message;
@@ -9,7 +9,8 @@ public class InvalidRangeException extends Exception {
     /**
      * Конструктор по умолчанию.
      */
-    public InvalidRangeException() {}
+    public InvalidRangeException() {
+    }
 
     /**
      * Конструктор с сообщением об ошибке.

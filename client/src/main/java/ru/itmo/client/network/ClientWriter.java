@@ -1,16 +1,21 @@
 package ru.itmo.client.network;
 
-import java.io.*;
-import java.net.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.SocketAddress;
 import java.util.zip.CRC32;
 
 /**
  * Класс ClientWriter отвечает за отправку объектов через DatagramSocket, разбивая их на пакеты.
  */
 public class ClientWriter {
+    private static final int PACKET_SIZE = 2024;
     private final DatagramSocket socket;
     private final SocketAddress serverAddress;
-    private static final int PACKET_SIZE = 2024;
 
     public ClientWriter(DatagramSocket socket, SocketAddress serverAddress) {
         this.socket = socket;

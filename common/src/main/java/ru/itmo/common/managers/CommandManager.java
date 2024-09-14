@@ -2,11 +2,12 @@ package ru.itmo.common.managers;
 
 import lombok.Getter;
 import ru.itmo.common.commands.*;
+import ru.itmo.common.entities.StudyGroup;
 import ru.itmo.common.entities.forms.Form;
 import ru.itmo.common.io.Console;
-import ru.itmo.common.entities.StudyGroup;
 import ru.itmo.common.network.Answer;
 import ru.itmo.common.network.Request;
+import ru.itmo.common.utility.UserService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,14 +16,14 @@ import java.util.Map;
 
 public class CommandManager {
     /**
-     *  Получает словарь команд.
+     * Получает историю команд.
+     */
+    private static final List<String> commandHistory = new ArrayList<>();
+    /**
+     * Получает словарь команд.
      */
     @Getter
     private static Map<String, Command> commands;
-    /**
-     *  Получает историю команд.
-     */
-    private static final List<String> commandHistory = new ArrayList<>();
 
     /**
      * Регистрирует команду.
@@ -33,13 +34,17 @@ public class CommandManager {
     public static void register(String commandName, Command command) {
         commands.put(commandName, command);
     }
-    public static void init(){
+
+    public static void init() {
         commands = new HashMap<>();
         register("exit", new Exit());
     }
 
-    public static Map<String, Command> getCommands() {return commands;}
-    public static void initServerCommands(CollectionManager<StudyGroup> groupCollectionManager){
+    public static Map<String, Command> getCommands() {
+        return commands;
+    }
+
+    public static void initServerCommands(CollectionManager<StudyGroup> groupCollectionManager, UserService userService) {
         init();
         register("show", new Show(groupCollectionManager));
         register("add", new Add(groupCollectionManager));
@@ -52,8 +57,12 @@ public class CommandManager {
         register("filter_starts_with_name", new FilterStartsWithName(groupCollectionManager));
         register("min_by_group_admin", new MinByGroupAdmin(groupCollectionManager));
         register("history", new History());
+        register("remove_greater" , new RemoveGreater(groupCollectionManager));
+        register("login", new Login(userService));
+        register("register", new Register(userService));
     }
-    public static void initClientCommands(Console console, Form<StudyGroup> studyGroupForm){
+
+    public static void initClientCommands(Console console, Form<StudyGroup> studyGroupForm) {
         init();
         register("help", new Help());
         register("info", new Info());
@@ -64,11 +73,13 @@ public class CommandManager {
         register("clear", new Clear());
         register("execute_script", new ExecuteScript());
         register("remove_by_at", new RemoveAt());
-        register("filter_starts_with_name", new FilterStartsWithName());
+        register("filter_starts_with_name", new FilterStartsWithName(console));
         register("min_by_group_admin", new MinByGroupAdmin());
-        register("remove_greater", new RemoveGreater());
+        register("remove_greater", new RemoveGreater(console, studyGroupForm));
         register("remove_all_by_students_count", new RemoveAllByStudentsCount());
         register("history", new History());
+        register("login", new Login());
+        register("register", new Register());
     }
 
     /**
@@ -81,7 +92,7 @@ public class CommandManager {
         var command = getCommands().get(request.getCommand());
         if (command == null) return new Answer(false, request.getCommand(), "Команда не найдена!");
         addToHistory(request.getCommand());
-        if(!"exit".equals(request.getCommand()) && !"save".equals(request.getCommand())) {
+        if (!"exit".equals(request.getCommand()) && !"save".equals(request.getCommand())) {
             return command.execute(request);
         }
         return new Answer(false, "Неизвестная команда");
@@ -92,8 +103,9 @@ public class CommandManager {
         var command = getCommands().get(request.getCommand());
         if (command == null) return;
         //addToHistory(request.getCommand());
-        if("exit".equals(request.getCommand()) || "save".equals(request.getCommand())) command.execute(request);
+        if ("exit".equals(request.getCommand()) || "save".equals(request.getCommand())) command.execute(request);
     }
+
     /**
      * Добавляет команду в историю.
      *
@@ -112,7 +124,7 @@ public class CommandManager {
         return sb.toString();
     }
 
-    public static List<String> get_commandHistory(){
+    public static List<String> get_commandHistory() {
         return commandHistory;
     }
 }
